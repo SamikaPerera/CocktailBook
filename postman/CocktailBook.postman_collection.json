@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "CocktailBook API",
+    "description": "CRUD, authentication, role checks and push endpoints for the CocktailBook API. Run the requests in order: the login requests save the tokens and 'Create spec' saves the new spec id for the requests after it.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "bartenderToken", "value": "" },
+    { "key": "specId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Login as manager",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "const body = pm.response.json();",
+        "pm.test('Returns a JWT and the manager role', () => {",
+        "  pm.expect(body.token).to.be.a('string');",
+        "  pm.expect(body.user.role).to.eql('manager');",
+        "  pm.expect(body.user).to.not.have.property('password');",
+        "});",
+        "pm.collectionVariables.set('token', body.token);"
+      ] } }],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"manager@cocktailbook.test\",\n  \"password\": \"Manager123\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "2. Login with wrong password (401)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 401 Unauthorized', () => pm.response.to.have.status(401));"
+      ] } }],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"manager@cocktailbook.test\",\n  \"password\": \"wrong-password\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "3. Create spec (manager)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+        "const body = pm.response.json();",
+        "pm.test('Spec has an id and the sent garnish', () => {",
+        "  pm.expect(body.id).to.be.a('string');",
+        "  pm.expect(body.garnish).to.eql('Lemon peel');",
+        "});",
+        "pm.collectionVariables.set('specId', body.id);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Test Sour {{$timestamp}}\",\n  \"category\": \"Sour\",\n  \"ingredients\": [\n    { \"name\": \"Gin\", \"measure\": \"50 ml\" },\n    { \"name\": \"Lemon juice\", \"measure\": \"25 ml\" }\n  ],\n  \"glass\": \"Coupe\",\n  \"ice\": \"None\",\n  \"garnish\": \"Lemon peel\",\n  \"method\": \"Shake with ice and strain.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/specs"
+      }
+    },
+    {
+      "name": "4. Create spec with missing fields (400)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));",
+        "pm.test('Lists the field errors', () => pm.expect(pm.response.json().errors).to.be.an('array').that.is.not.empty);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/specs"
+      }
+    },
+    {
+      "name": "5. Read all specs",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "pm.test('Returns a list of specs', () => pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty);"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/specs" }
+    },
+    {
+      "name": "6. Read one spec",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "pm.test('Returns the created spec', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('specId')));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/specs/{{specId}}" }
+    },
+    {
+      "name": "7. Update spec (manager)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "pm.test('Garnish was updated', () => pm.expect(pm.response.json().garnish).to.eql('Orange peel'));"
+      ] } }],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Test Sour {{specId}}\",\n  \"category\": \"Sour\",\n  \"ingredients\": [\n    { \"name\": \"Gin\", \"measure\": \"50 ml\" },\n    { \"name\": \"Lemon juice\", \"measure\": \"25 ml\" }\n  ],\n  \"glass\": \"Coupe\",\n  \"ice\": \"None\",\n  \"garnish\": \"Orange peel\",\n  \"method\": \"Shake with ice and strain.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/specs/{{specId}}"
+      }
+    },
+    {
+      "name": "8. Read change history",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "pm.test('History has the created and updated entries', () => pm.expect(pm.response.json().length).to.be.at.least(2));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/specs/{{specId}}/history" }
+    },
+    {
+      "name": "9. Login as bartender",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "const body = pm.response.json();",
+        "pm.test('Role is bartender', () => pm.expect(body.user.role).to.eql('bartender'));",
+        "pm.collectionVariables.set('bartenderToken', body.token);"
+      ] } }],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"bartender@cocktailbook.test\",\n  \"password\": \"Bartender123\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "10. Delete spec as bartender (403)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+      ] } }],
+      "request": {
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{bartenderToken}}", "type": "string" }] },
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/specs/{{specId}}"
+      }
+    },
+    {
+      "name": "11. Read specs without a token (401)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 401 Unauthorized', () => pm.response.to.have.status(401));"
+      ] } }],
+      "request": { "auth": { "type": "noauth" }, "method": "GET", "header": [], "url": "{{baseUrl}}/specs" }
+    },
+    {
+      "name": "12. Get VAPID public key (push)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+        "pm.test('Returns the public key only', () => pm.expect(pm.response.json().publicKey).to.be.a('string'));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/push/vapid-public-key" }
+    },
+    {
+      "name": "13. Delete spec (manager)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+      ] } }],
+      "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/specs/{{specId}}" }
+    },
+    {
+      "name": "14. Read deleted spec (404)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
+      ] } }],
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/specs/{{specId}}" }
+    }
+  ]
+}
