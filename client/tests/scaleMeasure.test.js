@@ -22,7 +22,7 @@ describe('scaleMeasure', () => {
     assert.equal(scaleMeasure('1 1/2 oz', 2, 'ml'), '90 ml');
   });
 
-  test('reads unicode fractions such as ¾', () => {
+  test('reads unicode fraction characters (three quarters)', () => {
     assert.equal(scaleMeasure('¾ oz', 1, 'ml'), '22.5 ml');
   });
 
