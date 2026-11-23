@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover lets the app use the full screen on notched phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="CocktailBook - the house cocktail spec manual" />
+    <meta name="theme-color" content="#1f1a24" />
+    <!-- Icons (generated from public/logo.svg). The manifest link is added by vite-plugin-pwa. -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <!-- Lets iOS run the app full screen when added to the home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="CocktailBook" />
+    <title>CocktailBook</title>
+    <!-- Apply the saved light/dark theme BEFORE the page draws, so it never flashes
+         the wrong colours. Must match THEME_KEY in src/hooks/useTheme.js. -->
+    <script>
+      try {
+        var t = localStorage.getItem('cocktailbook_theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

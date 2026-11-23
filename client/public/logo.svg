@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- CocktailBook logo: an amber coupe glass on the app's dark background -->
+  <rect width="512" height="512" rx="96" fill="#1f1a24"/>
+  <!-- glass bowl -->
+  <path d="M136 150 H376 L256 280 Z" fill="#e8a33d"/>
+  <!-- liquid shine -->
+  <path d="M168 166 H300 L240 232 Z" fill="#f4c77a" opacity="0.6"/>
+  <!-- stem and base -->
+  <rect x="246" y="276" width="20" height="104" fill="#f4eee8"/>
+  <rect x="184" y="372" width="144" height="20" rx="10" fill="#f4eee8"/>
+  <!-- garnish: a cherry on a pick -->
+  <line x1="318" y1="112" x2="282" y2="190" stroke="#f4eee8" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="326" cy="110" r="22" fill="#e5534b"/>
+</svg>
